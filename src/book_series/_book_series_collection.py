@@ -3,7 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, List
 
-from book_series import BookSeries, BookStatus
+from book_series._book_series import BookSeries
+from book_series._book_status import BookStatus
 
 
 def _is_idle(series: BookSeries) -> bool:

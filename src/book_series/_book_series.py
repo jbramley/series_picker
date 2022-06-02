@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
@@ -21,3 +22,6 @@ class BookSeries:
             raise KeyError("Required field `books' not found in dict")
 
         return cls(title=title, books=[Book.from_dict(b) for b in books])
+
+    def to_dict(self) -> dict[str, Any]:
+        return dataclasses.asdict(self)

@@ -1,6 +1,6 @@
 import yaml
 
-from book_series import Book, BookSeries
+from book_series.models import Book, BookSeries
 
 
 def yaml_fetcher(filename: str) -> BookSeries:

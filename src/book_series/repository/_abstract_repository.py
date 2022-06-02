@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Iterable
 
-from book_series import BookSeries, BookStatus
+from book_series.models import BookSeries, BookStatus
 
 
 class AbstractBookSeriesRepository(ABC):

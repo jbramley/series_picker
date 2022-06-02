@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from book_series._book_status import BookStatus
+from book_series.models._book_status import BookStatus
 
 
 @dataclass

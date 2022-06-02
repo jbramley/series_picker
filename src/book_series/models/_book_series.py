@@ -4,7 +4,7 @@ import dataclasses
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
-from book_series._book import Book
+from book_series.models._book import Book
 
 
 @dataclass

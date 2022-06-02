@@ -14,7 +14,7 @@ def main(data_file: str):
 
     new_series = goodreads_fetcher("https://www.goodreads.com/series/56399-the-expanse")
     print(new_series)
-    book_series_repository.add(new_series)
+    # book_series_repository.add(new_series)
     print([s.title for s in book_series_repository.get_all()])
 
 

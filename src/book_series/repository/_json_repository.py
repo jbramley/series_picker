@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Iterable
 
-from book_series import BookSeries
+from book_series.models import BookSeries
 from book_series.repository._abstract_repository import AbstractBookSeriesRepository
 
 

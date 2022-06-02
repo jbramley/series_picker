@@ -3,7 +3,7 @@ import re
 import bs4
 import requests
 
-from book_series import Book, BookSeries
+from book_series.models import Book, BookSeries
 
 
 def goodreads_fetcher(url: str) -> BookSeries:

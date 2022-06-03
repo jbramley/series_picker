@@ -1,6 +1,9 @@
+import random
+
 import click
 
 import fetchers
+from book_series.models import BookStatus
 from book_series.repository import AbstractBookSeriesRepository, get_repository
 from fetchers import get_fetcher
 
@@ -50,6 +53,17 @@ def list_series(
             print("\n".join(f"   * {b.title} [{b.status}]" for b in s.books))
     else:
         print("\n".join(f" * {s.title}" for s in series))
+
+
+@cli.command("next")
+@pass_repository
+def next_book(repository: AbstractBookSeriesRepository):
+    idle_series = repository.get_all_idle()
+    next_series = random.choice(list(idle_series))
+    next_title = next(
+        b.title for b in next_series.books if b.status == BookStatus.UNREAD
+    )
+    print(f"Try _{next_title}_ from the {next_series.title} series")
 
 
 if __name__ == "__main__":

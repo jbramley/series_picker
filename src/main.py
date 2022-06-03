@@ -7,16 +7,6 @@ from book_series.models import BookStatus
 from book_series.repository import AbstractBookSeriesRepository, get_repository
 from fetchers import get_fetcher
 
-# def main(data_file: str):
-#     book_series_repository = JsonBookSeriesRepository(data_file)
-#     print([s.title for s in book_series_repository.get_all()])
-#     print([s.title for s in book_series_repository.get_all_idle()])
-#
-#     new_series = goodreads_fetcher("https://www.goodreads.com/series/56399-the-expanse")
-#     print(new_series)
-#     # book_series_repository.add(new_series)
-#     print([s.title for s in book_series_repository.get_all()])
-
 pass_repository = click.make_pass_decorator(AbstractBookSeriesRepository)
 
 

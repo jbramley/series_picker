@@ -1,4 +1,3 @@
-from fetchers._goodreads import goodreads_fetcher
-from fetchers._yaml import yaml_fetcher
+from fetchers._factory import FETCHERS, get_fetcher
 
-__all__ = ["goodreads_fetcher", "yaml_fetcher"]
+__all__ = ["FETCHERS", "get_fetcher"]

@@ -1,10 +1,18 @@
 from __future__ import annotations
 
 import json
-from typing import Iterable
+from typing import Any, Iterable
 
 from book_series.models import BookSeries
 from book_series.repository._abstract_repository import AbstractBookSeriesRepository
+
+
+def _deserialize(raw_series: list[dict[str, Any]]) -> dict[str, BookSeries]:
+    return {s["title"]: BookSeries.from_dict(s) for s in raw_series}
+
+
+def _serialize(book_series: Iterable[BookSeries]) -> list[dict[str, Any]]:
+    return [s.to_dict() for s in book_series]
 
 
 class JsonBookSeriesRepository(AbstractBookSeriesRepository):
@@ -29,10 +37,8 @@ class JsonBookSeriesRepository(AbstractBookSeriesRepository):
 
     def _load(self) -> dict[str, BookSeries]:
         with open(self._filename, "r", encoding="utf8") as fp:
-            raw_series = json.load(fp)
-        return {s["title"]: BookSeries.from_dict(s) for s in raw_series}
+            return _deserialize(json.load(fp))
 
     def _save(self):
-        raw_series = [s.to_dict() for s in self.book_series.values()]
         with open(self._filename, "w", encoding="utf8") as fp:
-            json.dump(raw_series, fp)
+            json.dump(_serialize(self.book_series.values()), fp)

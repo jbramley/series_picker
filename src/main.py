@@ -1,10 +1,19 @@
 import random
 
 import click
+from rich.console import Console
+from rich.markup import escape
 
 import fetchers
 from book_series.models import BookStatus
 from book_series.repository import AbstractBookSeriesRepository, get_repository
+from cli_formatter import (
+    detail_formatter,
+    list_formatter,
+    mk_kobo_direct_url,
+    mk_kobo_search_url,
+    mk_libby_book_search_url,
+)
 from fetchers import get_fetcher
 
 pass_repository = click.make_pass_decorator(AbstractBookSeriesRepository)
@@ -37,23 +46,51 @@ def list_series(
     repository: AbstractBookSeriesRepository, only_idle: bool, show_details: bool
 ):
     series = repository.get_all_idle() if only_idle else repository.get_all()
+    series_list = list_formatter(series)
     if show_details:
-        for s in series:
-            print(f" * {s.title}")
-            print("\n".join(f"   * {b.title} [{b.status}]" for b in s.books))
-    else:
-        print("\n".join(f" * {s.title}" for s in series))
+        series_list = detail_formatter(series_list)
+
+    print("\n".join(s[0] for s in series_list))
 
 
 @cli.command("next")
+@click.option("--link-text/--no-link-text", default=True)
 @pass_repository
-def next_book(repository: AbstractBookSeriesRepository):
+def next_book(repository: AbstractBookSeriesRepository, link_text: bool):
+    console = Console()
     idle_series = repository.get_all_idle()
     next_series = random.choice(list(idle_series))
     next_title = next(
         b.title for b in next_series.books if b.status == BookStatus.UNREAD
     )
-    print(f"Try _{next_title}_ from the {next_series.title} series")
+    console.print(
+        f"Try [bold italic]{escape(next_title)}[/bold italic] from the {next_series.title} series"
+    )
+    urls = {
+        "Libby": mk_libby_book_search_url(next_title),
+        "Kobo": mk_kobo_direct_url(next_title),
+        "Kobo Search": mk_kobo_search_url(next_title),
+    }
+    console.print(
+        escape("  ["),
+        " | ".join(
+            url_link(link_title, link_value, link_text)
+            for link_title, link_value in urls.items()
+        ),
+        escape("]"),
+    )
+
+
+def url_link(title: str, url: str, as_link: bool) -> str:
+    return url_link_text(title, url) if as_link else url_link_plain(title, url)
+
+
+def url_link_text(title: str, url: str) -> str:
+    return f"[link={escape(url)}]{escape(title)}[/link]"
+
+
+def url_link_plain(title: str, url: str) -> str:
+    return f"{escape(title)}: {escape(url)}\n "
 
 
 if __name__ == "__main__":

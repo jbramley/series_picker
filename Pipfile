@@ -8,6 +8,8 @@ requests = "*"
 bs4 = "*"
 pyyaml = "*"
 click = "*"
+python-slugify = "*"
+rich = "*"
 
 [dev-packages]
 black = "*"
@@ -16,6 +18,7 @@ flake8 = "*"
 mypy = "*"
 types-requests = "*"
 types-pyyaml = "*"
+types-python-slugify = "*"
 
 [requires]
 python_version = "3.9"

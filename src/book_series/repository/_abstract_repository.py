@@ -26,3 +26,9 @@ class AbstractBookSeriesRepository(ABC):
     @abstractmethod
     def add(self, series: BookSeries):
         pass
+
+    @abstractmethod
+    def update_book_status(
+        self, series: BookSeries, book_title: str, book_status: BookStatus
+    ):
+        pass

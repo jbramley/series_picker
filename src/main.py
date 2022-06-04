@@ -1,11 +1,13 @@
 import random
+from typing import Tuple
 
 import click
 from rich.console import Console
 from rich.markup import escape
+from rich.prompt import Prompt
 
 import fetchers
-from book_series.models import BookStatus
+from book_series.models import BookSeries, BookStatus
 from book_series.repository import AbstractBookSeriesRepository, get_repository
 from cli_formatter import (
     detail_formatter,
@@ -58,11 +60,41 @@ def list_series(
 @pass_repository
 def next_book(repository: AbstractBookSeriesRepository, link_text: bool):
     console = Console()
+    while True:
+        next_series, next_title = _get_book_recommendation(repository)
+        _print_book_recommendation(console, link_text, next_series, next_title)
+        action = _get_recommendation_action(console)
+        if action == "R":
+            repository.update_book_status(next_series, next_title, BookStatus.READING)
+            break
+        if action == "O":
+            repository.update_book_status(next_series, next_title, BookStatus.ON_HOLD)
+            break
+        if action == "N":
+            continue
+        if action == "Q":
+            break
+
+
+def _get_book_recommendation(repository) -> Tuple[BookSeries, str]:
     idle_series = repository.get_all_idle()
     next_series = random.choice(list(idle_series))
     next_title = next(
         b.title for b in next_series.books if b.status == BookStatus.UNREAD
     )
+    return next_series, next_title
+
+
+def _get_recommendation_action(console):
+    console.print("\nUpdate Status?")
+    console.print("[R]eading")
+    console.print("[O]n hold")
+    console.print("[N]ew recommendation")
+    console.print("[Q]uit")
+    return Prompt.ask("Choice> ", choices=["R", "O", "N", "Q"])
+
+
+def _print_book_recommendation(console, link_text, next_series, next_title):
     console.print(
         f"Try [bold italic]{escape(next_title)}[/bold italic] from the {next_series.title} series"
     )

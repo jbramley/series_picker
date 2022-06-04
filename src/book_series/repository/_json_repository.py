@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any, Iterable
 
-from book_series.models import BookSeries
+from book_series.models import BookSeries, BookStatus
 from book_series.repository._abstract_repository import AbstractBookSeriesRepository
 
 
@@ -33,6 +33,15 @@ class JsonBookSeriesRepository(AbstractBookSeriesRepository):
         if series.title in self.book_series:
             raise KeyError(f"{series.title} already exists in repository")
         self.book_series[series.title] = series
+        self._save()
+
+    def update_book_status(
+        self, series: BookSeries, book_title: str, book_status: BookStatus
+    ):
+        for book in self.book_series[series.title].books:
+            if book.title == book_title:
+                book.status = book_status
+                break
         self._save()
 
     def _load(self) -> dict[str, BookSeries]:

@@ -5,6 +5,7 @@ from typing import Any, Iterable
 
 from book_series.models import BookSeries, BookStatus
 from book_series.repository._abstract_repository import AbstractBookSeriesRepository
+from book_series.repository._json_serde import json_serde_factory
 
 
 def _deserialize(raw_series: list[dict[str, Any]]) -> dict[str, BookSeries]:
@@ -46,8 +47,16 @@ class JsonBookSeriesRepository(AbstractBookSeriesRepository):
 
     def _load(self) -> dict[str, BookSeries]:
         with open(self._filename, "r", encoding="utf8") as fp:
-            return _deserialize(json.load(fp))
+            json_data = json.load(fp)
+            if isinstance(json_data, list):
+                self._serde = json_serde_factory()
+                series_json = json_data
+            else:
+                self._serde = json_serde_factory(json_data.get("v", "1"))
+                series_json = json_data.get("b", [])
+            series = self._serde.deserialize(series_json)
+            return {s.title: s for s in series}
 
     def _save(self):
         with open(self._filename, "w", encoding="utf8") as fp:
-            json.dump(_serialize(self.book_series.values()), fp)
+            json.dump(self._serde.serialize(self.book_series.values()), fp)

@@ -15,23 +15,23 @@ from book_series.repository._json_serde import (
 class JsonBookSeriesRepository(AbstractBookSeriesRepository):
     def __init__(self, filename: str):
         self._filename = filename
-        self.book_series_collection = self._load()
-        self.book_series = {s.title: s for s in self.book_series_collection.series}
+        self._book_series_collection = self._load()
+        self._book_series = {s.title: s for s in self._book_series_collection.series}
         self._serde: Optional[AbstractJsonSerde] = None
 
     def get_by_title(self, title: str) -> BookSeries:
-        return self.book_series[title]
+        return self._book_series[title]
 
     def get_all_idle(self) -> Iterable[BookSeries]:
-        return [s for s in self.book_series.values() if self._is_idle(s)]
+        return [s for s in self._book_series.values() if self._is_idle(s)]
 
     def get_all(self) -> Iterable[BookSeries]:
-        return list(self.book_series.values())
+        return list(self._book_series.values())
 
     def add(self, series: BookSeries):
-        if series.title in self.book_series:
+        if series.title in self._book_series:
             raise KeyError(f"{series.title} already exists in repository")
-        self.book_series[series.title] = series
+        self._book_series[series.title] = series
         self._save()
 
     def upgrade(self):
@@ -41,7 +41,7 @@ class JsonBookSeriesRepository(AbstractBookSeriesRepository):
     def update_book_status(
         self, series: BookSeries, book_title: str, book_status: BookStatus
     ):
-        for book in self.book_series[series.title].books:
+        for book in self._book_series[series.title].books:
             if book.title == book_title:
                 book.status = book_status
                 break
@@ -58,4 +58,4 @@ class JsonBookSeriesRepository(AbstractBookSeriesRepository):
 
     def _save(self):
         with open(self._filename, "w", encoding="utf8") as fp:
-            fp.write(self._serde.serialize(self.book_series_collection))
+            fp.write(self._serde.serialize(self._book_series_collection))

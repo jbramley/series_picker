@@ -76,6 +76,13 @@ def next_book(repository: AbstractBookSeriesRepository, link_text: bool):
             break
 
 
+@cli.command("upgrade")
+@pass_repository
+def upgrade(repository: AbstractBookSeriesRepository):
+    repository.upgrade()
+    repository
+
+
 def _get_book_recommendation(repository) -> Tuple[BookSeries, str]:
     idle_series = repository.get_all_idle()
     next_series = random.choice(list(idle_series))

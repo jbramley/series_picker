@@ -1,25 +1,23 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Iterable
+from typing import Iterable, Optional
 
-from book_series.models import BookSeries, BookStatus
+from book_series.models import BookSeries, BookSeriesCollection, BookStatus
 from book_series.repository._abstract_repository import AbstractBookSeriesRepository
-from book_series.repository._json_serde import json_serde_factory
-
-
-def _deserialize(raw_series: list[dict[str, Any]]) -> dict[str, BookSeries]:
-    return {s["title"]: BookSeries.from_dict(s) for s in raw_series}
-
-
-def _serialize(book_series: Iterable[BookSeries]) -> list[dict[str, Any]]:
-    return [s.to_dict() for s in book_series]
+from book_series.repository._json_serde import (
+    JSON_SERDE_LATEST_VERSION,
+    AbstractJsonSerde,
+    json_serde_factory,
+)
 
 
 class JsonBookSeriesRepository(AbstractBookSeriesRepository):
     def __init__(self, filename: str):
         self._filename = filename
-        self.book_series = self._load()
+        self.book_series_collection = self._load()
+        self.book_series = {s.title: s for s in self.book_series_collection.series}
+        self._serde: Optional[AbstractJsonSerde] = None
 
     def get_by_title(self, title: str) -> BookSeries:
         return self.book_series[title]
@@ -36,6 +34,10 @@ class JsonBookSeriesRepository(AbstractBookSeriesRepository):
         self.book_series[series.title] = series
         self._save()
 
+    def upgrade(self):
+        self._serde = json_serde_factory(JSON_SERDE_LATEST_VERSION)
+        self._save()
+
     def update_book_status(
         self, series: BookSeries, book_title: str, book_status: BookStatus
     ):
@@ -45,18 +47,15 @@ class JsonBookSeriesRepository(AbstractBookSeriesRepository):
                 break
         self._save()
 
-    def _load(self) -> dict[str, BookSeries]:
+    def _load(self) -> BookSeriesCollection:
         with open(self._filename, "r", encoding="utf8") as fp:
             json_data = json.load(fp)
             if isinstance(json_data, list):
                 self._serde = json_serde_factory()
-                series_json = json_data
             else:
                 self._serde = json_serde_factory(json_data.get("v", "1"))
-                series_json = json_data.get("b", [])
-            series = self._serde.deserialize(series_json)
-            return {s.title: s for s in series}
+            return self._serde.deserialize(json_data)
 
     def _save(self):
         with open(self._filename, "w", encoding="utf8") as fp:
-            json.dump(self._serde.serialize(self.book_series.values()), fp)
+            fp.write(self._serde.serialize(self.book_series_collection))
